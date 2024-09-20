@@ -17,13 +17,25 @@ dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
 const TESTNET_CHAIN_ID = 8008135;
 const TESTNET_RPC_URL = "https://api.helium.fhenix.zone";
 
-const testnetConfig = {
+type TestnetConfig = {
+  chainId: number;
+  url: string;
+  accounts?:
+    | string[]
+    | {
+        count: number;
+        mnemonic: string;
+        path: string;
+      };
+};
+
+const testnetConfig: TestnetConfig = {
   chainId: TESTNET_CHAIN_ID,
   url: TESTNET_RPC_URL,
 };
 
 // Select either private keys or mnemonic from .env file or environment variables
-const keys = process.env.KEY1;
+const keys = process.env.KEY1 as string;
 if (!keys) {
   let mnemonic = process.env.MNEMONIC;
   if (!mnemonic) {
@@ -42,7 +54,7 @@ if (!keys) {
 
 const config: HardhatUserConfig = {
   solidity: "0.8.25",
-  defaultNetwork: "hardhat",
+  defaultNetwork: "testnet",
   networks: {
     testnet: testnetConfig,
   },

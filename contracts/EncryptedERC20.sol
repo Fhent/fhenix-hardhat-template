@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "@fhenixprotocol/contracts/access/Permissioned.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@fhenixprotocol/contracts/FHE.sol";
-import "@fhenixprotocol/contracts/access/Permissioned.sol";
 
 contract EncryptedERC20 is ERC20, Permissioned {
   uint8 public constant encDecimals = 6;
