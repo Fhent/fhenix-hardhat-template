@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@fhenixprotocol/contracts/FHE.sol";
 import "@fhenixprotocol/contracts/access/Permissioned.sol";
 
-contract WrappingERC20 is ERC20, Permissioned {
+contract EncryptedERC20 is ERC20, Permissioned {
   uint8 public constant encDecimals = 6;
 
   mapping(address => euint64) internal _encBalances;

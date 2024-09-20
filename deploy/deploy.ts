@@ -13,22 +13,25 @@ const func: DeployFunction = async function () {
     if (hre.network.name === "localfhenix") {
       await fhenixjs.getFunds(signer.address);
     } else {
-        console.log(
-            chalk.red("Please fund your account with testnet FHE from https://faucet.fhenix.zone"));
-        return;
+      console.log(
+        chalk.red(
+          "Please fund your account with testnet FHE from https://faucet.fhenix.zone",
+        ),
+      );
+      return;
     }
   }
 
-  const counter = await deploy("Counter", {
+  const encryptedERC20 = await deploy("EncryptedERC20", {
     from: signer.address,
-    args: [],
+    args: ["EncryptedERC20", "E20"],
     log: true,
     skipIfAlreadyDeployed: false,
   });
 
-  console.log(`Counter contract: `, counter.address);
+  console.log(`EncryptedERC20 contract: `, encryptedERC20.address);
 };
 
 export default func;
-func.id = "deploy_counter";
-func.tags = ["Counter"];
+func.id = "deploy_contract";
+func.tags = ["Contract"];
