@@ -11,26 +11,27 @@ contract WrappingERC20 is ERC20 {
     _mint(msg.sender, 100 * 10 ** uint(decimals()));
   }
 
-  function wrap(uint32 amount) public {
-    // Make sure that the sender has enough of the public balance
+  function wrap(uint256 amount) external {
     require(balanceOf(msg.sender) >= amount);
-    // Burn public balance
+
     _burn(msg.sender, amount);
 
-    // convert public amount to shielded by encrypting it
-    euint32 shieldedAmount = FHE.asEuint32(amount);
-    // Add shielded balance to his current balance
+    uint64 convertedAmount = _convertDecimalForWrap(amount);
+    euint64 shieldedAmount = FHE.asEuint64(convertedAmount);
+
     _encBalances[msg.sender] = _encBalances[msg.sender] + shieldedAmount;
   }
 
-  function unwrap(inEuint32 memory amount) public {
-    euint32 _amount = FHE.asEuint32(amount);
-    // verify that our shielded balance is greater or equal than the requested amount
+  function unwrap(inEuint64 memory amount) external {
+    euint64 _amount = FHE.asEuint64(amount);
     FHE.req(_encBalances[msg.sender].gte(_amount));
-    // subtract amount from shielded balance
+
     _encBalances[msg.sender] = _encBalances[msg.sender] - _amount;
-    // add amount to caller's public balance by calling the `mint` function
-    _mint(msg.sender, FHE.decrypt(_amount));
+
+    uint64 decryptedAmount = FHE.decrypt(_amount);
+    uint256 convertedAmount = _convertDecimalForUnwrap(decryptedAmount);
+
+    _mint(msg.sender, convertedAmount);
   }
 
   function approveEncrypted(
@@ -70,5 +71,17 @@ contract WrappingERC20 is ERC20 {
     );
 
     return isTransferable;
+  }
+
+  function _convertDecimalForWrap(
+    uint256 amount
+  ) internal view returns (uint64) {
+    return uint64(amount / 10 ** (decimals() - encDecimals));
+  }
+
+  function _convertDecimalForUnwrap(
+    uint64 amount
+  ) internal view returns (uint256) {
+    return uint256(amount) * 10 ** (decimals() - encDecimals);
   }
 }
