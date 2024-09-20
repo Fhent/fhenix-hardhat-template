@@ -5,7 +5,10 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@fhenixprotocol/contracts/FHE.sol";
 
 contract WrappingERC20 is ERC20 {
-  mapping(address => euint32) internal _encBalances;
+  uint8 public constant encDecimals = 6;
+
+  mapping(address => euint64) internal _encBalances;
+  mapping(address => mapping(address => euint64)) internal _allowances;
 
   constructor(string memory name, string memory symbol) ERC20(name, symbol) {
     _mint(msg.sender, 100 * 10 ** uint(decimals()));
@@ -45,15 +48,30 @@ contract WrappingERC20 is ERC20 {
 
   function transferEncrypted(
     address to,
-    inEuint32 calldata encryptedAmount
-  ) public {
-    euint32 amount = FHE.asEuint32(encryptedAmount);
-    // Make sure the sender has enough tokens.
-    FHE.req(amount.lte(_encBalances[msg.sender]));
+    inEuint64 calldata encryptedAmount
+  ) external {
+    euint64 amount = FHE.asEuint64(encryptedAmount);
+    ebool canTransfer = FHE.lte(amount, _encBalances[msg.sender]);
+    euint64 canTransferAmount = FHE.select(
+      canTransfer,
+      amount,
+      FHE.asEuint64(0)
+    );
 
-    // Add to the balance of `to` and subract from the balance of `from`.
-    _encBalances[to] = _encBalances[to] + amount;
-    _encBalances[msg.sender] = _encBalances[msg.sender] - amount;
+    _transferEncrypted(msg.sender, to, canTransferAmount, canTransfer);
+  }
+
+  function transferFromEncrypted(
+    address from,
+    address to,
+    inEuint64 calldata encryptedAmount
+  ) external {
+    euint64 amount = FHE.asEuint64(encryptedAmount);
+    ebool canTransfer = FHE.lte(amount, _encBalances[from]);
+    euint64 transferAmount = FHE.select(canTransfer, amount, FHE.asEuint64(0));
+    ebool isTransferable = FHE.asEbool(true);
+
+    _transferEncrypted(from, to, transferAmount, isTransferable);
   }
 
   function _updateAllowance(
@@ -71,6 +89,23 @@ contract WrappingERC20 is ERC20 {
     );
 
     return isTransferable;
+  }
+
+  function _transferEncrypted(
+    address from,
+    address to,
+    euint64 amount,
+    ebool isTransferable
+  ) internal {
+    euint64 transferValue = FHE.select(
+      isTransferable,
+      amount,
+      FHE.asEuint64(0)
+    );
+
+    _encBalances[to] = FHE.add(_encBalances[to], transferValue);
+
+    _encBalances[from] = FHE.sub(_encBalances[from], transferValue);
   }
 
   function _convertDecimalForWrap(
