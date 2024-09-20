@@ -3,7 +3,7 @@ import { abi } from "../artifacts/contracts/EncryptedERC20.sol/EncryptedERC20.js
 
 import hre from "hardhat";
 
-const { ethers } = hre;
+const { fhenixjs, ethers } = hre;
 
 const contractAddress = "0x0e1b61b6D2824A7679C139Dd41a74FD7Fd221333";
 const contractABI = abi;
@@ -37,6 +37,12 @@ async function ContractCall(
   } else if (cfunc === "unwrap") {
     const encryptedUint64 = await client.encrypt_uint64(args[0]);
     args[0] = encryptedUint64;
+  } else if (cfunc === "approveEncrypted") {
+    args[1] = await fhenixjs.encrypt_uint64(cargs[1]);
+  } else if (cfunc === "transferEncrypted") {
+    args[1] = await fhenixjs.encrypt_uint64(cargs[1]);
+  } else if (cfunc === "transferFromEncrypted") {
+    args[2] = await fhenixjs.encrypt_uint64(cargs[2]);
   }
 
   const contract = new ethers.Contract(contractAddress, contractABI, wallet);
@@ -51,6 +57,8 @@ async function main() {
   const wallet = process.argv[2];
   const param1 = process.argv[3];
   const param2 = process.argv[4];
+  const param3 = process.argv[5];
+  const param4 = process.argv[6];
 
   switch (param1) {
     case "totalSupply":
@@ -71,6 +79,21 @@ async function main() {
       await ContractCall(Number(wallet), param1, [
         BigInt(Number(param2) * 10 ** 6),
       ]);
+      break;
+    case "approveEncrypted":
+      await ContractCall(Number(wallet), param1, [
+        param2,
+        BigInt(Number(param3) * 10 ** 6),
+      ]);
+      break;
+    case "transferEncrypted":
+      await ContractCall(Number(wallet), param1, [
+        param2,
+        BigInt(Number(param3) * 10 ** 6),
+      ]);
+      break;
+    case "transferFromEncrypted":
+      await ContractCall(Number(wallet), param1, [param2, param3, param4]);
       break;
     default:
       console.log("Invalid parameter");
