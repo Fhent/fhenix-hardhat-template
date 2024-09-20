@@ -33,6 +33,15 @@ contract WrappingERC20 is ERC20 {
     _mint(msg.sender, FHE.decrypt(_amount));
   }
 
+  function approveEncrypted(
+    address spender,
+    inEuint64 calldata encryptedAmount
+  ) external {
+    euint64 amount = FHE.asEuint64(encryptedAmount);
+
+    _allowances[msg.sender][spender] = amount;
+  }
+
   function transferEncrypted(
     address to,
     inEuint32 calldata encryptedAmount
@@ -44,5 +53,22 @@ contract WrappingERC20 is ERC20 {
     // Add to the balance of `to` and subract from the balance of `from`.
     _encBalances[to] = _encBalances[to] + amount;
     _encBalances[msg.sender] = _encBalances[msg.sender] - amount;
+  }
+
+  function _updateAllowance(
+    address owner,
+    address spender,
+    euint64 amount,
+    ebool isTransferable
+  ) internal returns (ebool) {
+    euint64 currentAllowance = _allowances[owner][spender];
+
+    _allowances[owner][spender] = FHE.select(
+      isTransferable,
+      FHE.sub(currentAllowance, amount),
+      currentAllowance
+    );
+
+    return isTransferable;
   }
 }
