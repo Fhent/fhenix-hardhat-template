@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "fhenixjs": "0.2.1",
+    "fhevmjs": "^0.5.2",
     "viem": "^2.21.10"
   }
 }
