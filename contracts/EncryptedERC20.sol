@@ -3,8 +3,9 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@fhenixprotocol/contracts/FHE.sol";
+import "@fhenixprotocol/contracts/access/Permissioned.sol";
 
-contract WrappingERC20 is ERC20 {
+contract WrappingERC20 is ERC20, Permissioned {
   uint8 public constant encDecimals = 6;
 
   mapping(address => euint64) internal _encBalances;
@@ -12,6 +13,12 @@ contract WrappingERC20 is ERC20 {
 
   constructor(string memory name, string memory symbol) ERC20(name, symbol) {
     _mint(msg.sender, 100 * 10 ** uint(decimals()));
+  }
+
+  function encryptedBalanceOf(
+    Permission calldata perm
+  ) external view onlySender(perm) returns (uint256) {
+    return FHE.decrypt(_encBalances[msg.sender]);
   }
 
   function wrap(uint256 amount) external {
@@ -67,9 +74,17 @@ contract WrappingERC20 is ERC20 {
     inEuint64 calldata encryptedAmount
   ) external {
     euint64 amount = FHE.asEuint64(encryptedAmount);
-    ebool canTransfer = FHE.lte(amount, _encBalances[from]);
+    ebool canTransfer = FHE.and(
+      FHE.lte(amount, _encBalances[from]),
+      FHE.lte(amount, _allowances[from][msg.sender])
+    );
     euint64 transferAmount = FHE.select(canTransfer, amount, FHE.asEuint64(0));
-    ebool isTransferable = FHE.asEbool(true);
+    ebool isTransferable = _updateAllowance(
+      from,
+      msg.sender,
+      transferAmount,
+      canTransfer
+    );
 
     _transferEncrypted(from, to, transferAmount, isTransferable);
   }
