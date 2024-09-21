@@ -60,7 +60,7 @@ localTestnetConfig["accounts"] = [keys];
 
 const config: HardhatUserConfig = {
   solidity: "0.8.25",
-  defaultNetwork: "localfhenix",
+  defaultNetwork: "testnet",
   networks: {
     testnet: testnetConfig,
     localfhenix: localTestnetConfig,

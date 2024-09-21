@@ -1,5 +1,5 @@
 import { FhenixClient } from "fhenixjs";
-import { address, abi } from "../deployments/localfhenix/FhenixBridge.json";
+import { address, abi } from "../deployments/testnet/FhenixBridge.json";
 
 import hre from "hardhat";
 
@@ -23,7 +23,7 @@ async function ContractCall(
   let args = cargs;
   const wallet = new ethers.Wallet(
     wallets[key],
-    new ethers.JsonRpcProvider("http://127.0.0.1:42069"),
+    new ethers.JsonRpcProvider("https://api.helium.fhenix.zone"),
   );
   const client = new FhenixClient({ provider: hre.ethers.provider });
 
@@ -31,7 +31,7 @@ async function ContractCall(
     const encryptedTo = await client.encrypt_address(args[0]);
     const encryptedAmount = await client.encrypt_uint64(args[1]);
     const seal =
-      "0xae8a6a854a52108fe6ae6ff366b2acdd4f778ad1d8c3642fd0c1dcc784f5cd4d";
+      "0x5c3e7456151987b15780733878bc01a3cce6eeba995ba71904084a4bc661d631";
 
     args[0] = encryptedTo;
     args[1] = encryptedAmount;

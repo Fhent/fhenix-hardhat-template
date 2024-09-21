@@ -1,5 +1,5 @@
 import { FhenixClient, getPermit } from "fhenixjs";
-import { address, abi } from "../deployments/localfhenix/EncryptedERC20.json";
+import { address, abi } from "../deployments/testnet/EncryptedERC20.json";
 
 import hre from "hardhat";
 
@@ -23,7 +23,7 @@ async function ContractCall(
   let args = cargs;
   const wallet = new ethers.Wallet(
     wallets[key],
-    new ethers.JsonRpcProvider("http://127.0.0.1:42069"),
+    new ethers.JsonRpcProvider("https://api.helium.fhenix.zone"),
   );
   const client = new FhenixClient({ provider: hre.ethers.provider });
 
