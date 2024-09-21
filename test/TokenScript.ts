@@ -1,11 +1,11 @@
 import { FhenixClient, getPermit } from "fhenixjs";
-import { abi } from "../artifacts/contracts/EncryptedERC20.sol/EncryptedERC20.json";
+import { address, abi } from "../deployments/localfhenix/EncryptedERC20.json";
 
 import hre from "hardhat";
 
 const { fhenixjs, ethers } = hre;
 
-const contractAddress = "0x5c93e3B7824035B375E373FaC1578D4089dcE77A";
+const contractAddress = address;
 const contractABI = abi;
 
 const wallets: { [key: number]: string } = {
