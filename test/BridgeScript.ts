@@ -1,36 +1,19 @@
-import { FhenixClient, getPermit } from "fhenixjs";
-import deployments from "../deployments/localfhenix/FhenixBridge.json";
+import { FhenixClient } from "fhenixjs";
+import { address, abi } from "../deployments/localfhenix/FhenixBridge.json";
 
 import hre from "hardhat";
 
-const { fhenixjs, ethers } = hre;
+const { ethers } = hre;
 
 const wallets: { [key: number]: string } = {
-  1: process.env.KEY as string,
+  1: process.env.KEY1 as string,
   2: process.env.KEY2 as string,
   3: process.env.KEY3 as string,
 };
 
-const contractAddress = deployments.address;
+const contractAddress = address;
 const relayerAddress = "0xA139Bcfb689926ebCF2AABDbd32FBaFC250e70d9";
-const contractABI = deployments.abi;
-
-function padToBytes32(hexString: string): string {
-  if (!hexString.startsWith("0x")) {
-    hexString = "0x" + hexString;
-  }
-
-  const hexWithoutPrefix = hexString.slice(2);
-
-  if (hexWithoutPrefix.length > 64) {
-    throw new Error("Input hex string is too long to be converted to bytes32");
-  }
-
-  const paddedHex = hexWithoutPrefix.padStart(64, "0");
-
-  return "0x" + paddedHex;
-}
-
+const contractABI = abi;
 async function ContractCall(
   key: number,
   cfunc: string,
@@ -40,7 +23,7 @@ async function ContractCall(
   let args = cargs;
   const wallet = new ethers.Wallet(
     wallets[key],
-    new ethers.JsonRpcProvider("https://api.helium.fhenix.zone"),
+    new ethers.JsonRpcProvider("http://127.0.0.1:42069"),
   );
   const client = new FhenixClient({ provider: hre.ethers.provider });
 
@@ -81,7 +64,7 @@ async function main() {
       await ContractCall(Number(wallet), param1);
       break;
     case "intents":
-      await ContractCall(Number(wallet), param1, [param2]);
+      await ContractCall(Number(wallet), param1, [BigInt(param2)]);
       break;
     case "bridgeWEERC20":
       await ContractCall(Number(wallet), param1, [
