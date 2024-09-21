@@ -4,6 +4,12 @@ pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@fhenixprotocol/contracts/FHE.sol";
 
+enum IntentStatus {
+  Pending,
+  Processed,
+  Repaid
+}
+
 interface IFhenixWEERC20 {
   function transferEncrypted(
     address recipient,
@@ -23,12 +29,16 @@ contract FhenixBridge is Ownable2Step {
   struct Intent {
     address from;
     address to;
+    address relayer;
     euint64 amount;
+    IntentStatus status;
   }
 
   uint64 public nextIntentId = 0;
 
   mapping(uint64 => Intent) public intents;
+
+  bytes32 public repayingRoot;
 
   event Packet(
     eaddress encryptedTo,
@@ -45,6 +55,10 @@ contract FhenixBridge is Ownable2Step {
 
   constructor(address _tokenAddress) Ownable(msg.sender) {
     weerc20 = IFhenixWEERC20(_tokenAddress);
+  }
+
+  function setRepayingRoot(bytes32 _root) public onlyOwner {
+    repayingRoot = _root;
   }
 
   function bridgeWEERC20(
@@ -73,10 +87,42 @@ contract FhenixBridge is Ownable2Step {
     euint64 amount = FHE.asEuint64(_encryptedAmount);
 
     nextIntentId++;
-    Intent memory intent = Intent({from: msg.sender, to: _to, amount: amount});
+    Intent memory intent = Intent({
+      from: msg.sender,
+      to: _to,
+      amount: amount,
+      relayer: msg.sender,
+      status: IntentStatus.Pending
+    });
     intents[nextIntentId] = intent;
 
     emit IntentProcesses(msg.sender, _to, amount);
+  }
+
+  function processedIntrentStatus(uint64 _intentId) public onlyOwner {
+    Intent storage intent = intents[_intentId];
+    require(intent.status == IntentStatus.Pending, "Intent not pending");
+
+    intent.status = IntentStatus.Processed;
+  }
+
+  function repayRelayer(
+    uint64 _intentId,
+    inEuint64 calldata _encryptedAmount
+  ) public {
+    Intent storage intent = intents[_intentId];
+    require(intent.relayer != address(0), "Intent not found");
+    require(intent.relayer == msg.sender, "You can't repay this intent");
+    require(intent.status == IntentStatus.Processed, "Intent not processed");
+
+    euint64 amount = FHE.asEuint64(_encryptedAmount);
+    ebool canRepay = FHE.eq(intent.amount, amount);
+
+    FHE.req(canRepay);
+
+    weerc20.transferEncrypted(intent.from, _encryptedAmount);
+
+    intent.status = IntentStatus.Repaid;
   }
 
   // For Testing
