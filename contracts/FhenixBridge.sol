@@ -99,7 +99,7 @@ contract FhenixBridge is Ownable2Step {
     emit IntentProcesses(msg.sender, _to, amount);
   }
 
-  function processedIntrentStatus(uint64 _intentId) public onlyOwner {
+  function processedIntentStatus(uint64 _intentId) public onlyOwner {
     Intent storage intent = intents[_intentId];
     require(intent.status == IntentStatus.Pending, "Intent not pending");
 

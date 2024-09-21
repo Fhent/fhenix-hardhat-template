@@ -81,12 +81,12 @@ async function main() {
         BigInt(Number(param3) * 10 ** 6),
       ]);
       break;
-    case "processedIntrentStatus":
-      await ContractCall(Number(wallet), param1, [BigInt(param2)]);
+    case "processedIntentStatus":
+      await ContractCall(Number(wallet), param1, [BigInt(Number(param2))]);
       break;
     case "repayRelayer":
       await ContractCall(Number(wallet), param1, [
-        BigInt(param2),
+        BigInt(Number(param2)),
         BigInt(Number(param3) * 10 ** 6),
       ]);
       break;
