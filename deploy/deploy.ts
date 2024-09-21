@@ -29,7 +29,16 @@ const func: DeployFunction = async function () {
     skipIfAlreadyDeployed: false,
   });
 
+  const bridge = await deploy("FhenixBridge", {
+    from: signer.address,
+    args: [encryptedERC20.address],
+    log: true,
+    skipIfAlreadyDeployed: false,
+  });
+
+  console.log("Signer address: ", signer.address);
   console.log(`EncryptedERC20 contract: `, encryptedERC20.address);
+  console.log(`Bridge contract: `, bridge.address);
 };
 
 export default func;

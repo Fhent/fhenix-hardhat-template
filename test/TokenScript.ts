@@ -5,8 +5,9 @@ import hre from "hardhat";
 
 const { fhenixjs, ethers } = hre;
 
-const contractAddress = "0x0e1b61b6D2824A7679C139Dd41a74FD7Fd221333";
+const contractAddress = "0x5c93e3B7824035B375E373FaC1578D4089dcE77A";
 const contractABI = abi;
+
 const wallets: { [key: number]: string } = {
   1: process.env.KEY1 as string,
   2: process.env.KEY2 as string,
@@ -22,7 +23,7 @@ async function ContractCall(
   let args = cargs;
   const wallet = new ethers.Wallet(
     wallets[key],
-    new ethers.JsonRpcProvider("https://api.helium.fhenix.zone"),
+    new ethers.JsonRpcProvider("http://127.0.0.1:42069"),
   );
   const client = new FhenixClient({ provider: hre.ethers.provider });
 
