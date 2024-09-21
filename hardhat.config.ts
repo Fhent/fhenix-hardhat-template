@@ -34,29 +34,36 @@ const testnetConfig: TestnetConfig = {
   url: TESTNET_RPC_URL,
 };
 
+const localTestnetConfig: TestnetConfig = {
+  chainId: 412346,
+  url: "http://127.0.0.1:42069",
+};
+
 // Select either private keys or mnemonic from .env file or environment variables
-const keys = process.env.KEY1 as string;
-if (!keys) {
-  let mnemonic = process.env.MNEMONIC;
-  if (!mnemonic) {
-    throw new Error(
-      "No mnemonic or private key provided, please set MNEMONIC or KEY in your .env file",
-    );
-  }
-  testnetConfig["accounts"] = {
-    count: 10,
-    mnemonic,
-    path: "m/44'/60'/0'/0",
-  };
-} else {
-  testnetConfig["accounts"] = [keys];
-}
+const keys = process.env.KEY2 as string;
+// if (!keys) {
+//   let mnemonic = process.env.MNEMONIC;
+//   if (!mnemonic) {
+//     throw new Error(
+//       "No mnemonic or private key provided, please set MNEMONIC or KEY in your .env file",
+//     );
+//   }
+//   testnetConfig["accounts"] = {
+//     count: 10,
+//     mnemonic,
+//     path: "m/44'/60'/0'/0",
+//   };
+// } else {
+testnetConfig["accounts"] = [keys];
+localTestnetConfig["accounts"] = [keys];
+//}
 
 const config: HardhatUserConfig = {
   solidity: "0.8.25",
-  defaultNetwork: "testnet",
+  defaultNetwork: "localfhenix",
   networks: {
     testnet: testnetConfig,
+    localfhenix: localTestnetConfig,
   },
   typechain: {
     outDir: "types",
