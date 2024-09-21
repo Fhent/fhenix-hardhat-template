@@ -40,6 +40,9 @@ async function ContractCall(
   } else if (cfunc === "onRecvIntent") {
     const encryptedIntentId = await client.encrypt_uint64(args[1]);
     args[1] = encryptedIntentId;
+  } else if (cfunc === "repayRelayer") {
+    const encryptedAmount = await client.encrypt_uint64(args[1]);
+    args[1] = encryptedAmount;
   } else if (cfunc === "withdraw") {
     const encryptedAmount = await client.encrypt_uint64(args[0]);
     args[0] = encryptedAmount;
@@ -75,6 +78,15 @@ async function main() {
     case "onRecvIntent":
       await ContractCall(Number(wallet), param1, [
         param2,
+        BigInt(Number(param3) * 10 ** 6),
+      ]);
+      break;
+    case "processedIntrentStatus":
+      await ContractCall(Number(wallet), param1, [BigInt(param2)]);
+      break;
+    case "repayRelayer":
+      await ContractCall(Number(wallet), param1, [
+        BigInt(param2),
         BigInt(Number(param3) * 10 ** 6),
       ]);
       break;
