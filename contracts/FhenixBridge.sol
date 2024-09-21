@@ -20,12 +20,27 @@ interface IFhenixWEERC20 {
 contract FhenixBridge is Ownable2Step {
   IFhenixWEERC20 public weerc20;
 
+  struct Intent {
+    address from;
+    address to;
+    euint64 amount;
+  }
+
+  uint64 public nextIntentId = 0;
+
+  mapping(uint64 => Intent) public intents;
+
   event Packet(
     eaddress encryptedTo,
     euint64 encryptedAmount,
     string toPermit,
     string amountPermit,
     address relayerAddress
+  );
+  event IntentProcesses(
+    address indexed from,
+    address indexed to,
+    euint64 amount
   );
 
   constructor(address _tokenAddress) Ownable(msg.sender) {
@@ -54,6 +69,14 @@ contract FhenixBridge is Ownable2Step {
     inEuint64 calldata _encryptedAmount
   ) public {
     weerc20.transferFromEncrypted(msg.sender, _to, _encryptedAmount);
+
+    euint64 amount = FHE.asEuint64(_encryptedAmount);
+
+    nextIntentId++;
+    Intent memory intent = Intent({from: msg.sender, to: _to, amount: amount});
+    intents[nextIntentId] = intent;
+
+    emit IntentProcesses(msg.sender, _to, amount);
   }
 
   // For Testing
