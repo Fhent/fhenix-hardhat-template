@@ -9,6 +9,7 @@ import "fhenix-hardhat-network";
 import "hardhat-deploy";
 import { HardhatUserConfig } from "hardhat/config";
 import { resolve } from "path";
+import "@nomicfoundation/hardhat-verify";
 
 // DOTENV_CONFIG_PATH is used to specify the path to the .env file for example in the CI
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
@@ -64,6 +65,21 @@ const config: HardhatUserConfig = {
   networks: {
     testnet: testnetConfig,
     localfhenix: localTestnetConfig,
+  },
+  etherscan: {
+    apiKey: {
+      testnet: "abc",
+    },
+    customChains: [
+      {
+        network: "testnet",
+        chainId: 8008135,
+        urls: {
+          apiURL: "https://explorer.helium.fhenix.zone/api",
+          browserURL: "https://explorer.helium.fhenix.zone/",
+        },
+      },
+    ],
   },
   typechain: {
     outDir: "types",

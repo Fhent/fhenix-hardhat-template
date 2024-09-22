@@ -39,6 +39,22 @@ const func: DeployFunction = async function () {
   console.log("Signer address: ", signer.address);
   console.log(`EncryptedERC20 contract: `, encryptedERC20.address);
   console.log(`Bridge contract: `, bridge.address);
+
+  try {
+    await hre.run("verify:verify", {
+      address: encryptedERC20.address,
+      constructorArguments: ["EncryptedERC20", "E20"],
+    });
+
+    await hre.run("verify:verify", {
+      address: bridge.address,
+      constructorArguments: [encryptedERC20.address],
+    });
+
+    console.log("Contracts verified!");
+  } catch (error) {
+    console.error("Verification failed");
+  }
 };
 
 export default func;
